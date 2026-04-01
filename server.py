@@ -35,6 +35,12 @@ def get_chats():
     chats = list(chats_collection.find(
         {}, 
         {"_id": 0}
+    ).sort("created_at", -1))@app.route("/chats", methods=["GET"])
+def get_chats():
+    user_id = request.args.get("userId", "default")
+    chats = list(chats_collection.find(
+        {"user_id": user_id}, 
+        {"_id": 0}
     ).sort("created_at", -1))
     return jsonify(chats)
 
@@ -45,11 +51,14 @@ def chat():
     user_message = data.get("message")
 
     # Find existing chat
+    user_id = data.get("userId", "default")
     chat = chats_collection.find_one({"chat_id": chat_id})
 
+    user_id = data.get("userId", "default")
     if not chat:
         chat = {
             "chat_id": chat_id,
+            "user_id": user_id,
             "title": user_message[:30],
             "created_at": datetime.now(),
             "messages": [
